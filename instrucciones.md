@@ -78,6 +78,9 @@ Para detener el servidor, volver a la terminal y presionar:
 Ctrl + C
 ```
 
+
+
+## asdasdas
 ## Consideraciones
 
 - Cada integrante debe crear su propio entorno virtual.
