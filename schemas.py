@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, time
 
 from pydantic import BaseModel, ConfigDict
 
@@ -55,3 +55,43 @@ class InscripcionRespuesta(InscripcionCrear):
     fecha_baja: date | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+# JORNADAS
+
+class JornadaCrear(BaseModel):
+    id_curso: int
+    fecha: date
+    hora_inicio: time | None = None
+    observaciones: str | None = None
+
+
+class JornadaRespuesta(JornadaCrear):
+    id_jornada: int
+    model_config = ConfigDict(from_attributes=True)
+
+# ASISTENCIAS
+
+class AsistenciaCrear(BaseModel):
+    id_jornada: int
+    id_inscripcion: int
+    estado: str
+    justificada: bool = False
+    observaciones: str | None = None
+
+
+class AsistenciaRespuesta(AsistenciaCrear):
+    id_asistencia: int
+    model_config = ConfigDict(from_attributes=True)
+
+# ALUMNOS DE UNA JORNADA
+
+class AlumnoJornadaRespuesta(BaseModel):
+    id_alumno: int
+    nombre: str
+    apellido: str
+    dni: str
+    id_inscripcion: int
+    id_asistencia: int | None = None
+    estado: str | None = None
+    justificada: bool = False
+    observaciones: str | None = None

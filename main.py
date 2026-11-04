@@ -21,7 +21,12 @@ from schemas import (
     AlumnoCrear,
     AlumnoRespuesta,
     InscripcionCrear,
-    InscripcionRespuesta
+    InscripcionRespuesta,
+    JornadaCrear,
+    JornadaRespuesta,
+    AsistenciaCrear,
+    AsistenciaRespuesta,
+    AlumnoJornadaRespuesta
 )
 
 app = FastAPI(title="Sistema de Asistencia CFP Nº1")
@@ -270,3 +275,202 @@ def listar_cursos_de_alumno(
     ).all()
 
     return cursos
+
+# JORNADAS
+
+@app.get("/jornadas", response_model=list[JornadaRespuesta])
+def listar_jornadas(db: Session = Depends(obtener_db)):
+    jornadas = db.query(Jornada).order_by(
+        Jornada.fecha.desc(),
+        Jornada.id_jornada.desc()
+    ).all()
+
+    return jornadas
+
+
+@app.post("/jornadas", response_model=JornadaRespuesta, status_code=201)
+def crear_jornada(datos: JornadaCrear, db: Session = Depends(obtener_db)):
+    curso = db.query(Curso).filter(
+        Curso.id_curso == datos.id_curso
+    ).first()
+
+    if curso is None:
+        raise HTTPException(
+            status_code=404,
+            detail="El curso no existe"
+        )
+
+    jornada_existente = db.query(Jornada).filter(
+        Jornada.id_curso == datos.id_curso,
+        Jornada.fecha == datos.fecha
+    ).first()
+
+    if jornada_existente is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe una jornada para ese curso y fecha"
+        )
+
+    nueva_jornada = Jornada(
+        id_curso=datos.id_curso,
+        fecha=datos.fecha,
+        hora_inicio=datos.hora_inicio,
+        observaciones=datos.observaciones
+    )
+
+    db.add(nueva_jornada)
+    db.commit()
+    db.refresh(nueva_jornada)
+
+    return nueva_jornada
+
+# ASISTENCIAS
+
+@app.get(
+    "/jornadas/{id_jornada}/asistencias",
+    response_model=list[AsistenciaRespuesta]
+)
+def listar_asistencias_de_jornada(
+    id_jornada: int,
+    db: Session = Depends(obtener_db)
+):
+    jornada = db.query(Jornada).filter(
+        Jornada.id_jornada == id_jornada
+    ).first()
+
+    if jornada is None:
+        raise HTTPException(
+            status_code=404,
+            detail="La jornada no existe"
+        )
+
+    asistencias = db.query(Asistencia).filter(
+        Asistencia.id_jornada == id_jornada
+    ).order_by(Asistencia.id_asistencia).all()
+
+    return asistencias
+
+
+@app.post(
+    "/asistencias",
+    response_model=AsistenciaRespuesta,
+    status_code=201
+)
+def crear_asistencia(
+    datos: AsistenciaCrear,
+    db: Session = Depends(obtener_db)
+):
+    jornada = db.query(Jornada).filter(
+        Jornada.id_jornada == datos.id_jornada
+    ).first()
+
+    if jornada is None:
+        raise HTTPException(
+            status_code=404,
+            detail="La jornada no existe"
+        )
+
+    inscripcion = db.query(Inscripcion).filter(
+        Inscripcion.id_inscripcion == datos.id_inscripcion
+    ).first()
+
+    if inscripcion is None:
+        raise HTTPException(
+            status_code=404,
+            detail="La inscripción no existe"
+        )
+
+    if inscripcion.id_curso != jornada.id_curso:
+        raise HTTPException(
+            status_code=400,
+            detail="La inscripción no corresponde al curso de esta jornada"
+        )
+
+    asistencia_existente = db.query(Asistencia).filter(
+        Asistencia.id_jornada == datos.id_jornada,
+        Asistencia.id_inscripcion == datos.id_inscripcion
+    ).first()
+
+    if asistencia_existente is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Ya existe una asistencia para este alumno en la jornada"
+        )
+
+    if datos.estado not in ["Presente", "Tarde", "Ausente"]:
+        raise HTTPException(
+            status_code=422,
+            detail="El estado debe ser Presente, Tarde o Ausente"
+        )
+
+    nueva_asistencia = Asistencia(
+        id_jornada=datos.id_jornada,
+        id_inscripcion=datos.id_inscripcion,
+        estado=datos.estado,
+        justificada=datos.justificada,
+        observaciones=datos.observaciones
+    )
+
+    db.add(nueva_asistencia)
+    db.commit()
+    db.refresh(nueva_asistencia)
+
+    return nueva_asistencia
+
+@app.get(
+    "/jornadas/{id_jornada}/alumnos",
+    response_model=list[AlumnoJornadaRespuesta]
+)
+def listar_alumnos_de_jornada(
+    id_jornada: int,
+    db: Session = Depends(obtener_db)
+):
+    jornada = db.query(Jornada).filter(
+        Jornada.id_jornada == id_jornada
+    ).first()
+
+    if jornada is None:
+        raise HTTPException(
+            status_code=404,
+            detail="La jornada no existe"
+        )
+
+    inscripciones = db.query(Inscripcion).join(
+        Alumno,
+        Inscripcion.id_alumno == Alumno.id_alumno
+    ).filter(
+        Inscripcion.id_curso == jornada.id_curso,
+        Inscripcion.fecha_alta <= jornada.fecha,
+        (Inscripcion.fecha_baja.is_(None) |
+         (Inscripcion.fecha_baja > jornada.fecha))
+    ).order_by(
+        Alumno.apellido,
+        Alumno.nombre
+    ).all()
+
+    resultado = []
+
+    for inscripcion in inscripciones:
+
+        alumno = db.query(Alumno).filter(
+            Alumno.id_alumno == inscripcion.id_alumno
+        ).first()
+
+        asistencia = db.query(Asistencia).filter(
+            Asistencia.id_jornada == id_jornada,
+            Asistencia.id_inscripcion == inscripcion.id_inscripcion
+        ).first()
+
+        resultado.append({
+            "id_alumno": alumno.id_alumno,
+            "nombre": alumno.nombre,
+            "apellido": alumno.apellido,
+            "dni": alumno.dni,
+            "id_inscripcion": inscripcion.id_inscripcion,
+            "id_asistencia": asistencia.id_asistencia if asistencia else None,
+            "estado": asistencia.estado if asistencia else None,
+            "justificada": asistencia.justificada if asistencia else False,
+            "observaciones": asistencia.observaciones if asistencia else None
+        })
+
+    return resultado
