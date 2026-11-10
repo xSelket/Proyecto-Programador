@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistema de Asistencia - CFP Nº1</title>
+
+    <style>
+        :root {
+            --primary-color: #17365d;
+            --primary-hover: #24558c;
+            --bg-body: #f4f6f8;
+            --bg-card: #ffffff;
+            --text-main: #222222;
+            --text-muted: #666666;
+            --border-color: #dcdfe6;
+            --success-color: #176b35;
+            --error-color: #b00020;
+            --radius: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            padding-bottom: 40px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* HEADER FIX PARA MÓVILES */
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .contenedor-principal {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* NAVEGACIÓN POR PESTAÑAS (TABS) PARA MÓVILES */
+        .tabs-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 0 16px 0;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .tabs-nav::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .tab-btn {
+            flex: 0 0 auto;
+            background: #e2e8f0;
+            color: var(--primary-color);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.activo {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 6px rgba(23, 54, 93, 0.3);
+        }
+
+        /* SECCIONES Y TARJETAS */
+        section {
+            background: var(--bg-card);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: var(--radius);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: none; /* Controlado por las pestañas */
+        }
+
+        section.activa {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #f0f3f6;
+            padding-bottom: 6px;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            font-size: 1.05rem;
+            margin: 20px 0 10px 0;
+        }
+
+        .ayuda {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            margin-bottom: 14px;
+            line-height: 1.4;
+        }
+
+        /* FORMULARIOS Y CONTROLES ADAPTADOS A TOUCH */
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: #fff;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 36px;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0 16px;
+        }
+
+        .campo-completo {
+            grid-column: 1 / -1;
+        }
+
+        /* BOTONES DE ACCIÓN */
+        .acciones {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1 1 auto;
+            min-height: 46px;
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* MENSAJES DE ESTADO */
+        .mensaje {
+            margin-top: 14px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .error {
+            background: #fde8e8;
+            color: var(--error-color);
+        }
+
+        .correcto {
+            background: #e6f4ea;
+            color: var(--success-color);
+        }
+
+        /* TABLAS ADAPTATIVAS CON SCROLL */
+        .tabla-contenedor {
+            overflow-x: auto;
+            margin-top: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #edf2f7;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        /* RESPONSIVE LAYOUT (PANTALLAS CHICAS) */
+        @media (max-width: 640px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .acciones button {
+                width: 100%;
+            }
+
+            .contenedor-principal {
+                padding: 10px;
+            }
+
+            section {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Sistema de Asistencia — CFP Nº1</h1>
+        <p>Panel Móvil de Gestión Institucional</p>
+    </header>
+
+    <div class="contenedor-principal">
+
+        <!-- NAVEGACIÓN MÓVIL POR PESTAÑAS -->
+        <nav class="tabs-nav">
+            <button class="tab-btn activo" onclick="cambiarTab('sec-cursos', this)">Cursos</button>
+            <button class="tab-btn" onclick="cambiarTab('sec-alumnos', this)">Alumnos</button>
+            <button class="tab-btn" onclick="cambiarTab('sec-inscripciones', this)">Inscripciones</button>
+            <button class="tab-btn" onclick="cambiarTab('sec-jornadas', this)">Jornadas</button>
+            <button class="tab-btn" onclick="cambiarTab('sec-asistencias', this)">Asistencias</button>
+        </nav>
+
+        <!-- ===================== -->
+        <!-- SECCION CURSOS -->
+        <!-- ===================== -->
+        <section id="sec-cursos" class="activa">
+            <h2>Cargar un curso</h2>
+
+            <form id="formCurso">
+                <div class="form-grid">
+                    <div class="campo-completo">
+                        <label for="nombreCurso">Nombre del curso *</label>
+                        <input id="nombreCurso" required placeholder="Nombre oficial del curso">
+                    </div>
+
+                    <div>
+                        <label for="turno">Turno</label>
+                        <input id="turno" placeholder="Ej.: Mañana">
+                    </div>
+
+                    <div>
+                        <label for="cantidad_clases">Cantidad de clases</label>
+                        <input id="cantidad_clases" type="number" min="0" placeholder="0">
+                    </div>
+
+                    <div>
+                        <label for="inasistencias_posibles">Inasistencias posibles</label>
+                        <input id="inasistencias_posibles" type="number" min="0" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="acciones">
+                    <button type="submit">Guardar curso</button>
+                    <button type="button" id="btnConsultarCursos">Consultar cursos</button>
+                </div>
+            </form>
+
+            <p id="mensajeCursos" class="mensaje" role="status"></p>
+
+            <h3>Cursos registrados</h3>
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Turno</th>
+                            <th>Clases</th>
+                            <th>Inasistencias</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCursos">
+                        <tr><td colspan="5">Consultando cursos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ===================== -->
+        <!-- SECCION ALUMNOS -->
+        <!-- ===================== -->
+        <section id="sec-alumnos">
+            <h2>Cargar un alumno</h2>
+
+            <form id="formAlumno">
+                <div class="form-grid">
+                    <div>
+                        <label for="nombreAlumno">Nombre *</label>
+                        <input id="nombreAlumno" required>
+                    </div>
+
+                    <div>
+                        <label for="apellidoAlumno">Apellido *</label>
+                        <input id="apellidoAlumno" required>
+                    </div>
+
+                    <div>
+                        <label for="dni">DNI *</label>
+                        <input id="dni" type="number" required>
+                    </div>
+
+                    <div>
+                        <label for="fnac">Fecha de nacimiento</label>
+                        <input id="fnac" type="date">
+                    </div>
+
+                    <div>
+                        <label for="telefono">Teléfono</label>
+                        <input id="telefono" type="tel">
+                    </div>
+
+                    <div>
+                        <label for="mail">Correo electrónico</label>
+                        <input id="mail" type="email">
+                    </div>
+                </div>
+
+                <div class="acciones">
+                    <button type="submit">Guardar alumno</button>
+                    <button type="button" id="btnConsultarAlumnos">Consultar alumnos</button>
+                </div>
+            </form>
+
+            <p id="mensajeAlumnos" class="mensaje" role="status"></p>
+
+            <h3>Alumnos registrados</h3>
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Apellido</th>
+                            <th>Nombre</th>
+                            <th>DNI</th>
+                            <th>F. Nacimiento</th>
+                            <th>Teléfono</th>
+                            <th>Mail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaAlumnos">
+                        <tr><td colspan="7">Consultando alumnos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========================= -->
+        <!-- SECCIÓN DE INSCRIPCIONES -->
+        <!-- ========================= -->
+        <section id="sec-inscripciones">
+            <h2>Inscripción de alumnos a cursos</h2>
+
+            <form id="formInscripcion">
+                <div class="form-grid">
+                    <div>
+                        <label for="alumnoInscripcion">Alumno:</label>
+                        <select id="alumnoInscripcion" required>
+                            <option value="">Seleccionar alumno</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="cursoInscripcion">Curso:</label>
+                        <select id="cursoInscripcion" required>
+                            <option value="">Seleccionar curso</option>
+                        </select>
+                    </div>
+
+                    <div class="campo-completo">
+                        <label for="fechaAlta">Fecha de inscripción:</label>
+                        <input type="date" id="fechaAlta" required>
+                    </div>
+                </div>
+
+                <div class="acciones">
+                    <button type="submit">Registrar inscripción</button>
+                </div>
+            </form>
+
+            <div id="mensajeInscripciones" class="mensaje"></div>
+
+            <h3>Inscripciones registradas</h3>
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Alumno</th>
+                            <th>Curso</th>
+                            <th>Fecha de alta</th>
+                            <th>Fecha de baja</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaInscripciones"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========================= -->
+        <!-- SECCIÓN DE JORNADAS -->
+        <!-- ========================= -->
+        <section id="sec-jornadas">
+            <h2>Crear una jornada</h2>
+            <p class="ayuda">Una jornada corresponde a un curso y una fecha única.</p>
+
+            <form id="formJornada">
+                <div class="form-grid">
+                    <div>
+                        <label for="cursoJornada">Curso *</label>
+                        <select id="cursoJornada" required>
+                            <option value="">Seleccionar curso</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="fechaJornada">Fecha *</label>
+                        <input type="date" id="fechaJornada" required>
+                    </div>
+
+                    <div class="campo-completo">
+                        <label for="horaJornada">Hora de inicio</label>
+                        <input type="time" id="horaJornada">
+                    </div>
+
+                    <div class="campo-completo">
+                        <label for="observacionesJornada">Observaciones</label>
+                        <textarea id="observacionesJornada" placeholder="Observaciones generales de la jornada"></textarea>
+                    </div>
+                </div>
+
+                <div class="acciones">
+                    <button type="submit">Crear jornada</button>
+                    <button type="button" id="btnConsultarJornadas">Consultar jornadas</button>
+                </div>
+            </form>
+
+            <p id="mensajeJornadas" class="mensaje" role="status"></p>
+
+            <h3>Jornadas registradas</h3>
+            <div class="tabla-contenedor">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Curso</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Observaciones</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaJornadas">
+                        <tr><td colspan="6">Consultando jornadas...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ========================= -->
+        <!-- SECCIÓN DE ASISTENCIAS -->
+        <!-- ========================= -->
+        <section id="sec-asistencias">
+            <h2>Cargar asistencia</h2>
+            <p class="ayuda">Seleccioná una jornada para cargar la toma de asistencia.</p>
+
+            <div class="form-grid">
+                <div class="campo-completo">
+                    <label for="jornadaAsistencia">Jornada *</label>
+                    <select id="jornadaAsistencia">
+                        <option value="">Seleccionar jornada</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="acciones">
+                <button type="button" id="btnCargarAlumnosJornada">Mostrar alumnos</button>
+            </div>
+
+            <p id="mensajeAsistencias" class="mensaje" role="status"></p>
+
+            <div id="contenedorTablaAsistencias" hidden>
+                <h3 id="tituloJornadaSeleccionada">Alumnos de la jornada</h3>
+                
+                <div class="tabla-contenedor">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Apellido y nombre</th>
+                                <th>DNI</th>
+                                <th>Estado</th>
+                                <th>Justificada</th>
+                                <th>Observaciones</th>
+                                <th>Registro</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaAsistencias"></tbody>
+                    </table>
+                </div>
+
+                <div class="acciones">
+                    <button type="button" id="btnGuardarAsistencias">Guardar asistencias pendientes</button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ===================== -->
+    <!-- JAVASCRIPT -->
+    <!-- ===================== -->
+    <script>
+        // LÓGICA DE PESTAÑAS (TABS)
+        function cambiarTab(idSeccion, boton) {
+            document.querySelectorAll('section').forEach(sec => sec.classList.remove('activa'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('activo'));
+            
+            document.getElementById(idSeccion).classList.add('activa');
+            boton.classList.add('activo');
+        }
+
+        const API_URL = "http://127.0.0.1:8000";
+
+        // FUNCIONES GENERALES
+        function mostrarMensaje(elemento, texto, esError = false) {
+            elemento.textContent = texto;
+            elemento.className = esError ? "mensaje error" : "mensaje correcto";
+        }
+
+        // =====================
+        // CURSOS
+        // =====================
+        const formCurso = document.getElementById("formCurso");
+        const tablaCursos = document.getElementById("tablaCursos");
+        const mensajeCursos = document.getElementById("mensajeCursos");
+
+        async function consultarCursos() {
+            try {
+                const respuesta = await fetch(`${API_URL}/cursos`);
+                if (!respuesta.ok) throw new Error("No se pudieron consultar los cursos.");
+
+                const cursos = await respuesta.json();
+                const selectorCursoJornada = document.getElementById("cursoJornada");
+                
+                if (selectorCursoJornada) {
+                    selectorCursoJornada.innerHTML = '<option value="">Seleccionar curso</option>';
+                    cursos.forEach(curso => {
+                        const opcion = document.createElement("option");
+                        opcion.value = curso.id_curso;
+                        opcion.textContent = curso.nombre;
+                        selectorCursoJornada.appendChild(opcion);
+                    });
+                }
+
+                tablaCursos.innerHTML = "";
+                if (cursos.length === 0) {
+                    tablaCursos.innerHTML = '<tr><td colspan="5">No hay cursos registrados.</td></tr>';
+                    return;
+                }
+
+                cursos.forEach(curso => {
+                    const fila = document.createElement("tr");
+                    const valores = [
+                        curso.id_curso,
+                        curso.nombre,
+                        curso.turno ?? "",
+                        curso.cantidad_clases ?? "",
+                        curso.inasistencias_posibles ?? ""
+                    ];
+
+                    valores.forEach(valor => {
+                        const celda = document.createElement("td");
+                        celda.textContent = valor;
+                        fila.appendChild(celda);
+                    });
+                    tablaCursos.appendChild(fila);
+                });
+            } catch (error) {
+                mostrarMensaje(mensajeCursos, "Error al consultar cursos. Verificá el servidor.", true);
+            }
+        }
+
+        formCurso.addEventListener("submit", async evento => {
+            evento.preventDefault();
+            const cantidad = document.getElementById("cantidad_clases").value;
+            const inasistencias = document.getElementById("inasistencias_posibles").value;
+
+            const datos = {
+                nombre: document.getElementById("nombreCurso").value.trim(),
+                turno: document.getElementById("turno").value.trim() || null,
+                cantidad_clases: cantidad === "" ? null : Number(cantidad),
+                inasistencias_posibles: inasistencias === "" ? null : Number(inasistencias),
+                id_familia: null
+            };
+
+            try {
+                const respuesta = await fetch(`${API_URL}/cursos`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    const detalle = resultado.detail ?? "No se pudo guardar el curso.";
+                    throw new Error(typeof detalle === "string" ? detalle : JSON.stringify(detalle));
+                }
+
+                mostrarMensaje(mensajeCursos, `Curso "${resultado.nombre}" guardado correctamente.`);
+                formCurso.reset();
+                await consultarCursos();
+            } catch (error) {
+                mostrarMensaje(mensajeCursos, error.message, true);
+            }
+        });
+
+        document.getElementById("btnConsultarCursos").addEventListener("click", consultarCursos);
+
+        // =====================
+        // ALUMNOS
+        // =====================
+        const formAlumno = document.getElementById("formAlumno");
+        const tablaAlumnos = document.getElementById("tablaAlumnos");
+        const mensajeAlumnos = document.getElementById("mensajeAlumnos");
+
+        async function consultarAlumnos() {
+            try {
+                const respuesta = await fetch(`${API_URL}/alumnos`);
+                if (!respuesta.ok) throw new Error("No se pudieron consultar los alumnos.");
+
+                const alumnos = await respuesta.json();
+                tablaAlumnos.innerHTML = "";
+
+                if (alumnos.length === 0) {
+                    tablaAlumnos.innerHTML = '<tr><td colspan="7">No hay alumnos registrados.</td></tr>';
+                    return;
+                }
+
+                alumnos.forEach(alumno => {
+                    const fila = document.createElement("tr");
+                    const valores = [
+                        alumno.id_alumno,
+                        alumno.apellido,
+                        alumno.nombre,
+                        alumno.dni,
+                        alumno.fnac ?? "",
+                        alumno.telefono ?? "",
+                        alumno.mail ?? ""
+                    ];
+
+                    valores.forEach(valor => {
+                        const celda = document.createElement("td");
+                        celda.textContent = valor;
+                        fila.appendChild(celda);
+                    });
+                    tablaAlumnos.appendChild(fila);
+                });
+            } catch (error) {
+                mostrarMensaje(mensajeAlumnos, "Error al consultar alumnos. Verificá el servidor.", true);
+            }
+        }
+
+        formAlumno.addEventListener("submit", async evento => {
+            evento.preventDefault();
+            const datos = {
+                nombre: document.getElementById("nombreAlumno").value.trim(),
+                apellido: document.getElementById("apellidoAlumno").value.trim(),
+                dni: document.getElementById("dni").value.trim(),
+                fnac: document.getElementById("fnac").value || null,
+                telefono: document.getElementById("telefono").value.trim() || null,
+                mail: document.getElementById("mail").value.trim() || null
+            };
+
+            try {
+                const respuesta = await fetch(`${API_URL}/alumnos`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    const detalle = resultado.detail ?? "No se pudo guardar el alumno.";
+                    throw new Error(typeof detalle === "string" ? detalle : JSON.stringify(detalle));
+                }
+
+                mostrarMensaje(mensajeAlumnos, `Alumno ${resultado.apellido}, ${resultado.nombre} guardado correctamente.`);
+                formAlumno.reset();
+                await consultarAlumnos();
+            } catch (error) {
+                mostrarMensaje(mensajeAlumnos, error.message, true);
+            }
+        });
+
+        document.getElementById("btnConsultarAlumnos").addEventListener("click", consultarAlumnos);
+
+        // =========================
+        // INSCRIPCIONES
+        // =========================
+        async function cargarSelectoresInscripcion() {
+            const selectorAlumnos = document.getElementById("alumnoInscripcion");
+            const selectorCursos = document.getElementById("cursoInscripcion");
+
+            try {
+                const respuestaAlumnos = await fetch(`${API_URL}/alumnos`);
+                if (!respuestaAlumnos.ok) throw new Error("No se pudieron cargar los alumnos");
+                const alumnos = await respuestaAlumnos.json();
+
+                selectorAlumnos.innerHTML = '<option value="">Seleccionar alumno</option>';
+                alumnos.forEach(alumno => {
+                    const opcion = document.createElement("option");
+                    opcion.value = alumno.id_alumno;
+                    opcion.textContent = `${alumno.apellido}, ${alumno.nombre} - DNI: ${alumno.dni}`;
+                    selectorAlumnos.appendChild(opcion);
+                });
+
+                const respuestaCursos = await fetch(`${API_URL}/cursos`);
+                if (!respuestaCursos.ok) throw new Error("No se pudieron cargar los cursos");
+                const cursos = await respuestaCursos.json();
+
+                selectorCursos.innerHTML = '<option value="">Seleccionar curso</option>';
+                cursos.forEach(curso => {
+                    const opcion = document.createElement("option");
+                    opcion.value = curso.id_curso;
+                    opcion.textContent = `${curso.nombre} - ${curso.turno || "Sin turno"}`;
+                    selectorCursos.appendChild(opcion);
+                });
+            } catch (error) {
+                mostrarMensajeInscripciones("Error al cargar los alumnos o cursos.", false);
+            }
+        }
+
+        function mostrarMensajeInscripciones(texto, correcto) {
+            const mensaje = document.getElementById("mensajeInscripciones");
+            mensaje.textContent = texto;
+            mensaje.className = correcto ? "mensaje correcto" : "mensaje error";
+        }
+
+        async function consultarInscripciones() {
+            const tabla = document.getElementById("tablaInscripciones");
+            try {
+                const respuesta = await fetch(`${API_URL}/inscripciones`);
+                if (!respuesta.ok) throw new Error("No se pudieron consultar las inscripciones");
+                const inscripciones = await respuesta.json();
+
+                const respuestaAlumnos = await fetch(`${API_URL}/alumnos`);
+                const alumnos = await respuestaAlumnos.json();
+
+                const respuestaCursos = await fetch(`${API_URL}/cursos`);
+                const cursos = await respuestaCursos.json();
+
+                tabla.innerHTML = "";
+                inscripciones.forEach(inscripcion => {
+                    const alumno = alumnos.find(a => a.id_alumno === inscripcion.id_alumno);
+                    const curso = cursos.find(c => c.id_curso === inscripcion.id_curso);
+
+                    const fila = document.createElement("tr");
+                    fila.innerHTML = `
+                        <td>${inscripcion.id_inscripcion}</td>
+                        <td>${alumno ? alumno.apellido + ", " + alumno.nombre : "No encontrado"}</td>
+                        <td>${curso ? curso.nombre : "No encontrado"}</td>
+                        <td>${inscripcion.fecha_alta}</td>
+                        <td>${inscripcion.fecha_baja || "Activa"}</td>
+                    `;
+                    tabla.appendChild(fila);
+                });
+            } catch (error) {
+                mostrarMensajeInscripciones("Error al consultar las inscripciones.", false);
+            }
+        }
+
+        document.getElementById("formInscripcion").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const idAlumno = document.getElementById("alumnoInscripcion").value;
+            const idCurso = document.getElementById("cursoInscripcion").value;
+            const fechaAlta = document.getElementById("fechaAlta").value;
+
+            const datos = {
+                id_alumno: Number(idAlumno),
+                id_curso: Number(idCurso),
+                fecha_alta: fechaAlta
+            };
+
+            try {
+                const respuesta = await fetch(`${API_URL}/inscripciones`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) throw new Error(resultado.detail || "No se pudo registrar la inscripción");
+
+                mostrarMensajeInscripciones("Inscripción registrada correctamente.", true);
+                document.getElementById("formInscripcion").reset();
+                consultarInscripciones();
+            } catch (error) {
+                mostrarMensajeInscripciones(error.message, false);
+            }
+        });
+
+        function establecerFechaActual() {
+            const hoy = new Date();
+            const fecha = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000).toISOString().split("T")[0];
+            document.getElementById("fechaAlta").value = fecha;
+        }
+
+        // =========================
+        // JORNADAS
+        // =========================
+        let jornadasDisponibles = [];
+        let alumnosDeJornada = [];
+
+        function fechaLocalActual() {
+            const ahora = new Date();
+            return new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+        }
+
+        function mostrarErrorApi(resultado, mensajeAlternativo) {
+            const detalle = resultado && resultado.detail;
+            if (typeof detalle === "string") return detalle;
+            if (detalle) return JSON.stringify(detalle);
+            return mensajeAlternativo;
+        }
+
+        async function consultarJornadas() {
+            const tabla = document.getElementById("tablaJornadas");
+            const selector = document.getElementById("jornadaAsistencia");
+            const mensaje = document.getElementById("mensajeJornadas");
+
+            try {
+                const [respuestaJornadas, respuestaCursos] = await Promise.all([
+                    fetch(`${API_URL}/jornadas`),
+                    fetch(`${API_URL}/cursos`)
+                ]);
+
+                if (!respuestaJornadas.ok) throw new Error("No se pudieron consultar las jornadas.");
+                if (!respuestaCursos.ok) throw new Error("No se pudieron consultar los cursos.");
+
+                const jornadas = await respuestaJornadas.json();
+                const cursos = await respuestaCursos.json();
+                jornadasDisponibles = jornadas;
+
+                tabla.innerHTML = "";
+                selector.innerHTML = '<option value="">Seleccionar jornada</option>';
+
+                if (jornadas.length === 0) {
+                    tabla.innerHTML = '<tr><td colspan="6">No hay jornadas registradas.</td></tr>';
+                }
+
+                jornadas.forEach(jornada => {
+                    const curso = cursos.find(c => Number(c.id_curso) === Number(jornada.id_curso));
+                    const nombreCurso = curso ? curso.nombre : `Curso ${jornada.id_curso}`;
+
+                    const fila = document.createElement("tr");
+                    [
+                        jornada.id_jornada,
+                        nombreCurso,
+                        jornada.fecha,
+                        jornada.hora_inicio || "",
+                        jornada.observaciones || ""
+                    ].forEach(valor => {
+                        const celda = document.createElement("td");
+                        celda.textContent = valor ?? "";
+                        fila.appendChild(celda);
+                    });
+
+                    const celdaAccion = document.createElement("td");
+                    const boton = document.createElement("button");
+                    boton.type = "button";
+                    boton.textContent = "Tomar asistencia";
+                    boton.addEventListener("click", () => {
+                        selector.value = String(jornada.id_jornada);
+                        
+                        // Cambiar automáticamente a la pestaña asistencias en móvil
+                        cambiarTab('sec-asistencias', document.querySelectorAll('.tab-btn')[4]);
+                        
+                        cargarAlumnosDeJornada();
+                    });
+                    celdaAccion.appendChild(boton);
+                    fila.appendChild(celdaAccion);
+                    tabla.appendChild(fila);
+
+                    const opcion = document.createElement("option");
+                    opcion.value = jornada.id_jornada;
+                    opcion.textContent = `${nombreCurso} - ${jornada.fecha}`;
+                    selector.appendChild(opcion);
+                });
+
+                mostrarMensaje(mensaje, `${jornadas.length} jornada(s) consultada(s).`);
+            } catch (error) {
+                tabla.innerHTML = '<tr><td colspan="6">No se pudieron cargar las jornadas.</td></tr>';
+                mostrarMensaje(mensaje, error.message || "Error al consultar jornadas.", true);
+            }
+        }
+
+        document.getElementById("formJornada").addEventListener("submit", async evento => {
+            evento.preventDefault();
+            const datos = {
+                id_curso: Number(document.getElementById("cursoJornada").value),
+                fecha: document.getElementById("fechaJornada").value,
+                hora_inicio: document.getElementById("horaJornada").value || null,
+                observaciones: document.getElementById("observacionesJornada").value.trim() || null
+            };
+
+            try {
+                const respuesta = await fetch(`${API_URL}/jornadas`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+
+                const resultado = await respuesta.json();
+                if (!respuesta.ok) throw new Error(mostrarErrorApi(resultado, "No se pudo crear la jornada."));
+
+                mostrarMensaje(document.getElementById("mensajeJornadas"), `Jornada ${resultado.id_jornada} creada correctamente.`);
+                document.getElementById("formJornada").reset();
+                document.getElementById("fechaJornada").value = fechaLocalActual();
+
+                await consultarJornadas();
+            } catch (error) {
+                mostrarMensaje(document.getElementById("mensajeJornadas"), error.message, true);
+            }
+        });
+
+        document.getElementById("btnConsultarJornadas").addEventListener("click", consultarJornadas);
+
+        // =========================
+        // ASISTENCIAS
+        // =========================
+        async function cargarAlumnosDeJornada() {
+            const idJornada = document.getElementById("jornadaAsistencia").value;
+            const mensaje = document.getElementById("mensajeAsistencias");
+            const contenedor = document.getElementById("contenedorTablaAsistencias");
+            const tabla = document.getElementById("tablaAsistencias");
+            const botonGuardar = document.getElementById("btnGuardarAsistencias");
+
+            if (!idJornada) {
+                mostrarMensaje(mensaje, "Seleccioná una jornada.", true);
+                contenedor.hidden = true;
+                return;
+            }
+
+            try {
+                const respuesta = await fetch(`${API_URL}/jornadas/${idJornada}/alumnos`);
+                const resultado = await respuesta.json();
+
+                if (!respuesta.ok) throw new Error(mostrarErrorApi(resultado, "No se pudieron cargar los alumnos."));
+
+                alumnosDeJornada = resultado;
+                tabla.innerHTML = "";
+
+                const jornada = jornadasDisponibles.find(j => Number(j.id_jornada) === Number(idJornada));
+                const titulo = document.getElementById("tituloJornadaSeleccionada");
+                titulo.textContent = jornada ? `Alumnos de la jornada - ${jornada.fecha}` : "Alumnos de la jornada";
+
+                if (resultado.length === 0) {
+                    tabla.innerHTML = '<tr><td colspan="6">No hay alumnos inscriptos activos para esta jornada.</td></tr>';
+                }
+
+                resultado.forEach((alumno, indice) => {
+                    const fila = document.createElement("tr");
+
+                    const nombre = document.createElement("td");
+                    nombre.textContent = `${alumno.apellido}, ${alumno.nombre}`;
+                    fila.appendChild(nombre);
+
+                    const dni = document.createElement("td");
+                    dni.textContent = alumno.dni;
+                    fila.appendChild(dni);
+
+                    const estadoCelda = document.createElement("td");
+                    const selectorEstado = document.createElement("select");
+                    selectorEstado.id = `estadoAsistencia_${indice}`;
+                    selectorEstado.innerHTML = `
+                        <option value="">Seleccionar</option>
+                        <option value="Presente">Presente</option>
+                        <option value="Tarde">Tarde</option>
+                        <option value="Ausente">Ausente</option>
+                    `;
+                    if (alumno.estado) selectorEstado.value = alumno.estado;
+                    selectorEstado.disabled = Boolean(alumno.id_asistencia);
+                    estadoCelda.appendChild(selectorEstado);
+                    fila.appendChild(estadoCelda);
+
+                    const justificadaCelda = document.createElement("td");
+                    const justificada = document.createElement("input");
+                    justificada.type = "checkbox";
+                    justificada.id = `justificada_${indice}`;
+                    justificada.checked = Boolean(alumno.justificada);
+                    justificada.disabled = Boolean(alumno.id_asistencia);
+                    justificadaCelda.appendChild(justificada);
+                    fila.appendChild(justificadaCelda);
+
+                    const observacionesCelda = document.createElement("td");
+                    const observaciones = document.createElement("input");
+                    observaciones.type = "text";
+                    observaciones.id = `observacionesAsistencia_${indice}`;
+                    observaciones.value = alumno.observaciones || "";
+                    observaciones.placeholder = "Opcional";
+                    observaciones.disabled = Boolean(alumno.id_asistencia);
+                    observacionesCelda.appendChild(observaciones);
+                    fila.appendChild(observacionesCelda);
+
+                    const registro = document.createElement("td");
+                    registro.textContent = alumno.id_asistencia ? "Registrada" : "Pendiente";
+                    fila.appendChild(registro);
+
+                    tabla.appendChild(fila);
+                });
+
+                contenedor.hidden = false;
+                const pendientes = resultado.filter(a => !a.id_asistencia).length;
+                botonGuardar.disabled = pendientes === 0;
+                mostrarMensaje(mensaje, `${resultado.length} alumno(s): ${pendientes} asistencia(s) pendiente(s).`);
+            } catch (error) {
+                contenedor.hidden = true;
+                mostrarMensaje(mensaje, error.message || "Error al cargar las asistencias.", true);
+            }
+        }
+
+        document.getElementById("btnCargarAlumnosJornada").addEventListener("click", cargarAlumnosDeJornada);
+
+        document.getElementById("btnGuardarAsistencias").addEventListener("click", async () => {
+            const idJornada = Number(document.getElementById("jornadaAsistencia").value);
+            const pendientes = alumnosDeJornada
+                .map((alumno, indice) => ({ alumno, indice }))
+                .filter(item => !item.alumno.id_asistencia);
+
+            if (!idJornada) {
+                mostrarMensaje(document.getElementById("mensajeAsistencias"), "Seleccioná una jornada.", true);
+                return;
+            }
+
+            if (pendientes.length === 0) {
+                mostrarMensaje(document.getElementById("mensajeAsistencias"), "No hay asistencias pendientes para guardar.", true);
+                return;
+            }
+
+            for (const item of pendientes) {
+                const estado = document.getElementById(`estadoAsistencia_${item.indice}`).value;
+                if (!estado) {
+                    mostrarMensaje(document.getElementById("mensajeAsistencias"), `Seleccioná el estado de ${item.alumno.apellido}, ${item.alumno.nombre}.`, true);
+                    return;
+                }
+            }
+
+            const boton = document.getElementById("btnGuardarAsistencias");
+            boton.disabled = true;
+
+            try {
+                let guardadas = 0;
+                for (const item of pendientes) {
+                    const indice = item.indice;
+                    const datos = {
+                        id_jornada: idJornada,
+                        id_inscripcion: item.alumno.id_inscripcion,
+                        estado: document.getElementById(`estadoAsistencia_${indice}`).value,
+                        justificada: document.getElementById(`justificada_${indice}`).checked,
+                        observaciones: document.getElementById(`observacionesAsistencia_${indice}`).value.trim() || null
+                    };
+
+                    const respuesta = await fetch(`${API_URL}/asistencias`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(datos)
+                    });
+
+                    const resultado = await respuesta.json();
+                    if (!respuesta.ok) throw new Error(mostrarErrorApi(resultado, `No se pudo guardar la asistencia de ${item.alumno.apellido}.`));
+                    guardadas++;
+                }
+
+                mostrarMensaje(document.getElementById("mensajeAsistencias"), `Se guardaron ${guardadas} asistencia(s) correctamente.`);
+                await cargarAlumnosDeJornada();
+            } catch (error) {
+                mostrarMensaje(document.getElementById("mensajeAsistencias"), error.message, true);
+                await cargarAlumnosDeJornada();
+            } finally {
+                boton.disabled = false;
+            }
+        });
+
+        // INICIALIZACIÓN GENERAL
+        consultarCursos();
+        consultarAlumnos();
+        cargarSelectoresInscripcion();
+        consultarInscripciones();
+        establecerFechaActual();
+        document.getElementById("fechaJornada").value = fechaLocalActual();
+        consultarJornadas();
+    </script>
+
+</body>
+</html>
