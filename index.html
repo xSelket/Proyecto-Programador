@@ -7,16 +7,21 @@
 
     <style>
         :root {
-            --primary-color: #17365d;
-            --primary-hover: #24558c;
-            --bg-body: #f4f6f8;
+            --primary-color: #1e3a8a;
+            --primary-accent: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-body: #f1f5f9;
             --bg-card: #ffffff;
-            --text-main: #222222;
-            --text-muted: #666666;
-            --border-color: #dcdfe6;
-            --success-color: #176b35;
-            --error-color: #b00020;
-            --radius: 10px;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --success-bg: #dcfce7;
+            --success-color: #166534;
+            --warning-bg: #fef3c7;
+            --warning-color: #92400e;
+            --error-bg: #fee2e2;
+            --error-color: #991b1b;
+            --radius: 12px;
         }
 
         * {
@@ -35,14 +40,14 @@
 
         /* HEADER FIX PARA MÓVILES */
         header {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-accent) 100%);
             color: white;
-            padding: 16px;
+            padding: 18px 16px;
             text-align: center;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
         }
 
         header h1 {
@@ -89,9 +94,9 @@
         }
 
         .tab-btn.activo {
-            background: var(--primary-color);
-            color: white;
-            box-shadow: 0 2px 6px rgba(23, 54, 93, 0.3);
+         background: var(--primary-accent);
+         color: white;
+         box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
         }
 
         /* SECCIONES Y TARJETAS */
@@ -198,9 +203,9 @@
             flex: 1 1 auto;
             min-height: 46px;
             padding: 10px 18px;
-            border: 0;
+            border: 1px solid transparent;
             border-radius: 8px;
-            background: var(--primary-color);
+            background: var(--primary-accent);
             color: white;
             font-weight: 600;
             font-size: 0.95rem;
@@ -208,9 +213,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
         }
-
         button:hover {
             background: var(--primary-hover);
         }
@@ -267,7 +271,38 @@
             color: var(--primary-color);
             font-weight: 700;
         }
+         button.btn-secundario {
+            background: #eff6ff;
+            color: var(--primary-color);
+            border: 1px solid #bfdbfe;
+        }
 
+        button.btn-secundario:hover {
+            background: #dbeafe;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .badge-activa, .badge-registrada {
+            background: var(--success-bg);
+            color: var(--success-color);
+        }
+
+        .badge-pendiente {
+            background: var(--warning-bg);
+            color: var(--warning-color);
+        }
+
+        .badge-baja {
+            background: #f1f5f9;
+            color: #475569;
+        }
         /* RESPONSIVE LAYOUT (PANTALLAS CHICAS) */
         @media (max-width: 640px) {
             .form-grid {
@@ -338,7 +373,7 @@
 
                 <div class="acciones">
                     <button type="submit">Guardar curso</button>
-                    <button type="button" id="btnConsultarCursos">Consultar cursos</button>
+                    <button type="button" id="btnConsultarCursos" class="btn-secundario">Consultar cursos</button>
                 </div>
             </form>
 
@@ -404,7 +439,7 @@
 
                 <div class="acciones">
                     <button type="submit">Guardar alumno</button>
-                    <button type="button" id="btnConsultarAlumnos">Consultar alumnos</button>
+                    <button type="button" id="btnConsultarAlumnos" class="btn-secundario">Consultar alumnos</button>
                 </div>
             </form>
 
@@ -517,7 +552,7 @@
 
                 <div class="acciones">
                     <button type="submit">Crear jornada</button>
-                    <button type="button" id="btnConsultarJornadas">Consultar jornadas</button>
+                    <button type="button" id="btnConsultarJornadas" class="btn-secundario">Consultar jornadas</button>
                 </div>
             </form>
 
@@ -840,13 +875,18 @@
                     const alumno = alumnos.find(a => a.id_alumno === inscripcion.id_alumno);
                     const curso = cursos.find(c => c.id_curso === inscripcion.id_curso);
 
+                    const estadoBadge = inscripcion.fecha_baja
+                        ? `<span class="badge badge-baja">Baja: ${inscripcion.fecha_baja}</span>`
+                        : `<span class="badge badge-activa">Activa</span>`;
+
                     const fila = document.createElement("tr");
                     fila.innerHTML = `
-                        <td>${inscripcion.id_inscripcion}</td>
+                   <td>${inscripcion.id_inscripcion}</td>
                         <td>${alumno ? alumno.apellido + ", " + alumno.nombre : "No encontrado"}</td>
                         <td>${curso ? curso.nombre : "No encontrado"}</td>
                         <td>${inscripcion.fecha_alta}</td>
-                        <td>${inscripcion.fecha_baja || "Activa"}</td>
+                        <td>${estadoBadge}</td>
+                    
                     `;
                     tabla.appendChild(fila);
                 });
@@ -1089,9 +1129,10 @@
                     fila.appendChild(observacionesCelda);
 
                     const registro = document.createElement("td");
-                    registro.textContent = alumno.id_asistencia ? "Registrada" : "Pendiente";
+                    registro.innerHTML = alumno.id_asistencia
+                        ? `<span class="badge badge-registrada">Registrada</span>`
+                        : `<span class="badge badge-pendiente">Pendiente</span>`;
                     fila.appendChild(registro);
-
                     tabla.appendChild(fila);
                 });
 
