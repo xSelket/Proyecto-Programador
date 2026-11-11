@@ -1,0 +1,10 @@
+services:
+  api:
+    build: .
+    container_name: asistencia-api
+    ports:
+      # Se expone en el puerto 8003 local para no chocar con gunicorn (8000) ni otros proxies (8001, 8002, 8005)
+      - "127.0.0.1:8003:8000"
+    volumes:
+      - ./asistencia.db:/app/asistencia.db
+    restart: unless-stopped
