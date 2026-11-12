@@ -140,6 +140,34 @@ def crear_alumno(datos: AlumnoCrear, db: Session = Depends(obtener_db)):
     db.refresh(nuevo_alumno)
 
     return nuevo_alumno
+
+
+@app.delete("/alumnos/{id_alumno}", status_code=204)
+def eliminar_alumno(id_alumno: int, db: Session = Depends(obtener_db)):
+    alumno = db.query(Alumno).filter(Alumno.id_alumno == id_alumno).first()
+
+    if alumno is None:
+        raise HTTPException(
+            status_code=404,
+            detail="El alumno no existe"
+        )
+
+    # Verificar si tiene inscripciones asociadas
+    tiene_inscripciones = db.query(Inscripcion).filter(
+        Inscripcion.id_alumno == id_alumno
+    ).first()
+
+    if tiene_inscripciones is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede eliminar el alumno porque tiene inscripciones asociadas"
+        )
+
+    db.delete(alumno)
+    db.commit()
+
+    return None
+
 # -------------------------
 # ENDPOINTS DE INSCRIPCIONES
 # -------------------------
